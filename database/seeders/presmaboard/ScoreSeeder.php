@@ -16,6 +16,9 @@ class ScoreSeeder extends Seeder
      */
     public function run(): void
     {
+        // Clear existing scores to avoid unique constraint conflicts when seeding repeatedly
+        DB::table((new PresmaboardScore())->getTable())->truncate();
+
         $faker = Faker::create('id_ID');
         $studentIds = PresmaboardStudent::pluck('id')->toArray();
 

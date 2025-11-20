@@ -14,21 +14,29 @@ class PrestasiprimaUserSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('users')->insert([
+        $users = [
             [
                 'name' => 'Admin Prestasi Prima',
                 'email' => 'admin@smkprestasiprima.sch.id',
                 'password' => Hash::make('password'), // ganti sesuai kebutuhan
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'name' => 'Guru Prestasi Prima',
                 'email' => 'guru@smkprestasiprima.sch.id',
                 'password' => Hash::make('password'),
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
-        ]);
+        ];
+
+        foreach ($users as $u) {
+            DB::table('users')->updateOrInsert(
+                ['email' => $u['email']],
+                [
+                    'name' => $u['name'],
+                    'password' => $u['password'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
     }
 }

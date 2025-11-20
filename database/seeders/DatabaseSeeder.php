@@ -27,32 +27,29 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
-      	$this->call([
-          PrestasiprimaStaffSeeder::class,
-          AchievementSeeder::class,
-          ProjectCategorySeeder::class,
-          ScoreSeeder::class,
-          StudentSeeder::class,
-          UserSeeder::class,
-          ProjectSeeder::class,
-          PrestasiprimaKegiatanSeeder::class,
-          PrestasiprimaPrestasiSeeder::class,
-          PrestasiprimaIndustriSeeder::class,
-          PrestasiprimaGallerySeeder::class,
-          PrestasiprimaCategorySeeder::class,
-          PrestasiprimaNewsSeeder::class,
-          PrestasiprimaUserSeeder::class,
-          PresmaboardDatabaseSeeder::class,
-          ]);
+         	$this->call([
+             PrestasiprimaStaffSeeder::class,
+             AchievementSeeder::class,
+             ProjectCategorySeeder::class,
+             ScoreSeeder::class,
+             StudentSeeder::class,
+             UserSeeder::class,
+             ProjectSeeder::class,
+             PrestasiprimaKegiatanSeeder::class,
+             PrestasiprimaPrestasiSeeder::class,
+             PrestasiprimaIndustriSeeder::class,
+              PrestasiprimaUserSeeder::class,
+             ]);
 
         // ==========================================================
         // SEEDER PRESMALANCER (YANG SUDAH ADA)
         // ==========================================================
         
-        // Create Admin User
-        $admin = User::create([
-            'name' => 'Admin Presmalancer',
+        // Create Admin User (use updateOrCreate to avoid duplicate insert errors)
+        $admin = User::updateOrCreate([
             'email' => 'admin@presmalancer.com',
+        ], [
+            'name' => 'Admin Presmalancer',
             'password' => bcrypt('password'),
             'role' => 'admin',
             'email_verified_at' => now(),
@@ -147,35 +144,43 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($companies as $companyData) {
-            $user = User::create($companyData['user']);
-            $company = Company::create(array_merge($companyData['company'], ['user_id' => $user->id]));
-            
+            $user = User::updateOrCreate([
+                'email' => $companyData['user']['email'],
+            ], $companyData['user']);
+
+            $company = Company::updateOrCreate(
+                ['user_id' => $user->id],
+                array_merge($companyData['company'], ['user_id' => $user->id])
+            );
+
             // Create jobs for each company
             $this->createJobsForCompany($company);
         }
 
         // Create Regular Users with Profiles
         for ($i = 1; $i <= 5; $i++) {
-            $user = User::create([
-                'name' => "User {$i}",
+            $user = User::updateOrCreate([
                 'email' => "user{$i}@example.com",
+            ], [
+                'name' => "User {$i}",
                 'password' => bcrypt('password'),
                 'role' => 'user',
                 'email_verified_at' => now(),
             ]);
 
-            Profile::create([
-                'user_id' => $user->id,
-                'phone' => '+62 812 3456 78' . $i . '0',
-                'address' => 'Jakarta, Indonesia',
-                'bio' => "Saya adalah profesional yang berpengalaman di bidang teknologi dan memiliki passion untuk terus belajar.",
-                'skills' => "JavaScript, PHP, Laravel, React, Node.js",
-                'education' => "S1 Teknik Informatika",
-                'experience' => "3 tahun sebagai Software Developer",
-                'portfolio_link' => "https://portfolio-user{$i}.com",
-            ]);
+            Profile::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'phone' => '+62 812 3456 78' . $i . '0',
+                    'address' => 'Jakarta, Indonesia',
+                    'bio' => "Saya adalah profesional yang berpengalaman di bidang teknologi dan memiliki passion untuk terus belajar.",
+                    'skills' => "JavaScript, PHP, Laravel, React, Node.js",
+                    'education' => "S1 Teknik Informatika",
+                    'experience' => "3 tahun sebagai Software Developer",
+                    'portfolio_link' => "https://portfolio-user{$i}.com",
+                ]
+            );
         }
-
 
         // ==========================================================
         // SEEDER PRESTASIPRIMA (BARU DITAMBAHKAN DARI SQL)

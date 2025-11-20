@@ -12,15 +12,15 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table((new PresmaboardUser)->getTable())->insert([
+        // Use updateOrInsert to avoid duplicate-key errors when the seeder is re-run
+        DB::table((new PresmaboardUser)->getTable())->updateOrInsert(
+            ['email' => 'admin@presmaboard.com'],
             [
                 'name' => 'Admin Prestasi',
-                'email' => 'admin@presmaboard.com',
                 'password' => Hash::make('admin123'),
                 'created_at' => now(),
                 'updated_at' => now(),
-            ],
-
-        ]);
+            ]
+        );
     }
 }

@@ -31,24 +31,42 @@ class PresmaboardStudentSeeder extends Seeder
             $nis = 'NIS' . str_pad($i, 4, '0', STR_PAD_LEFT);
             $angkatan = (string) Carbon::now()->year;
 
-            // insert first without foto so we can use the inserted id for a predictable filename
-            $sid = DB::table('presmaboard_students')->insertGetId([
-                'nama' => $nama,
-                'gender' => $gender,
-                'foto' => null,
-                'kelas' => $kelas,
-                'jurusan' => $jurusan,
-                'angkatan' => $angkatan,
-                'email' => $email,
-                'nis' => $nis,
-                'is_active' => true,
-                'tanggal_lahir' => $tanggal_lahir,
-                'umur' => $umur,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
+            // Make seeding idempotent: look up by email, update if exists, otherwise insert
+            $existing = DB::table('presmaboard_students')->where('email', $email)->first();
 
-            // update the record with a predictable uploads path that the downloader will create
+            if ($existing) {
+                $sid = $existing->id;
+                DB::table('presmaboard_students')->where('id', $sid)->update([
+                    'nama' => $nama,
+                    'gender' => $gender,
+                    'kelas' => $kelas,
+                    'jurusan' => $jurusan,
+                    'angkatan' => $angkatan,
+                    'nis' => $nis,
+                    'is_active' => true,
+                    'tanggal_lahir' => $tanggal_lahir,
+                    'umur' => $umur,
+                    'updated_at' => Carbon::now(),
+                ]);
+            } else {
+                $sid = DB::table('presmaboard_students')->insertGetId([
+                    'nama' => $nama,
+                    'gender' => $gender,
+                    'foto' => null,
+                    'kelas' => $kelas,
+                    'jurusan' => $jurusan,
+                    'angkatan' => $angkatan,
+                    'email' => $email,
+                    'nis' => $nis,
+                    'is_active' => true,
+                    'tanggal_lahir' => $tanggal_lahir,
+                    'umur' => $umur,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+            }
+
+            // ensure predictable foto path is set (use existing id when present)
             DB::table('presmaboard_students')->where('id', $sid)->update([
                 'foto' => 'uploads/presmaboard/students/photo_' . $sid . '.jpg',
             ]);

@@ -45,6 +45,11 @@ class PresmaboardImageDownloaderSeeder extends Seeder
 
     private function downloadTo(string $url, string $dest): void
     {
+        if (! $this->shouldDownloadImages()) {
+            file_put_contents($dest, $this->tinyPlaceholder());
+            return;
+        }
+
         try {
             // Use file_get_contents; if allow_url_fopen is disabled this may fail.
             $contents = @file_get_contents($url);
@@ -57,6 +62,11 @@ class PresmaboardImageDownloaderSeeder extends Seeder
             // create tiny placeholder on failure
             file_put_contents($dest, $this->tinyPlaceholder());
         }
+    }
+
+    private function shouldDownloadImages(): bool
+    {
+        return (bool) env('PRESMABOARD_DOWNLOAD_IMAGES', false);
     }
 
     private function tinyPlaceholder(): string
